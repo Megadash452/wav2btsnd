@@ -13,7 +13,8 @@ public class Starter {
     public static void main(String[] args) {        
         System.out.println("WAV to btsnd 0.1 alpha");
         final byte[] btsnd_header = new byte[]{0x00,0x00,0x00,0x02,0x00,0x00,0x00,0x00};
-        final byte[] wav_header = new byte[]{0x52,0x49,0x46,0x46,0x24,0x07,0x19,0x00,0x57,0x41,0x56,0x45,0x66,0x6D,0x74,0x20,0x10,0x00,0x00,0x00,0x01,0x00,0x02,0x00,(byte) 0x80,(byte) 0xBB,0x00,0x00,0x00,(byte) 0xEE,0x02,0x00,0x04,0x00,0x10,0x00,0x64,0x61,0x74,0x61};
+        final byte[] wav_header1 = new byte[]{0x52,0x49,0x46,0x46};
+        final byte[] wav_header2 = new byte[]{0x57,0x41,0x56,0x45,0x66,0x6D,0x74,0x20,0x10,0x00,0x00,0x00,0x01,0x00,0x02,0x00,(byte) 0x80,(byte) 0xBB,0x00,0x00,0x00,(byte) 0xEE,0x02,0x00,0x04,0x00,0x10,0x00,0x64,0x61,0x74,0x61};
 
         if(args.length == 0){
             exitWithError();
@@ -25,11 +26,16 @@ public class Starter {
             ByteBuffer buffer = ByteBuffer.allocate(data.length);
             buffer.put(data);
             
-            byte[] compare_buffer = new byte[wav_header.length];
-            
+            byte[] compare_buffer1 = new byte[wav_header1.length];            
             buffer.position(0);
-            buffer.get(compare_buffer);
-            if(!Arrays.equals(compare_buffer, wav_header)){
+            buffer.get(compare_buffer1);
+            
+            byte[] compare_buffer2 = new byte[wav_header2.length];            
+            buffer.position(0x08);
+            buffer.get(compare_buffer2);
+            
+            if(!( Arrays.equals(compare_buffer1,wav_header1) &&
+                  Arrays.equals(compare_buffer2,wav_header2) ) ){
                 exitWithError();
             }
             
