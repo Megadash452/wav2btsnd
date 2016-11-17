@@ -27,8 +27,8 @@ public class Starter {
         	System.out.println("the following commands are only for making btsnds");
         	System.out.println("-loopPoint <sampleforlooping> specifies a specific sample to loop from there to the end, once playthrough of the btsnd has finished once. (cant be used with -noLoop.)");
         	System.out.println("-noLoop makes it where the btsnd doesnt loop its sound. (cant be used with -loopPoint.)");
-        	System.out.println("-gamepadOnly makes sound only hearable on gamepad(BUGGY?). (cant be used with -tvOnly.)");
-        	System.out.println("-tvOnly makes sound only hearable on tv(sound plays twice and then stops no matter what?). (cant be used with -gamepadOnly.)");
+        	System.out.println("-gamepadOnly makes sound only hearable on gamepad. (cant be used with -tvOnly.)");
+        	System.out.println("-tvOnly makes sound only hearable on tv. (cant be used with -gamepadOnly.)");
         	System.exit(0);
         	
         }
