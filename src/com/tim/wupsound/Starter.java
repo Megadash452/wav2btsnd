@@ -24,14 +24,18 @@ public class Starter {
         	System.out.println("Optional Args:");
         	System.out.println("-out <outfile> specifies a location to create the converted file, defualt is a bootSound.btsnd created in the same directory as this jar file.");
         	System.out.println("-makeWav converts a btsnd to a wav, instead of a wav to a btsnd.");
-        	System.out.println("-loopPoint <sampleforlooping> specifies a specific sample to loop from there to the end, once playthrough of the btsnd has finished once. (cant be used with -makeWav or -noLoop.)");
-        	System.out.println("-noLoop makes it where the btsnd doesnt loop its sound. (cant be used with -makeWav or -loopPoint.)");
+        	System.out.println("the following commands are only for making btsnds");
+        	System.out.println("-loopPoint <sampleforlooping> specifies a specific sample to loop from there to the end, once playthrough of the btsnd has finished once. (cant be used with -noLoop.)");
+        	System.out.println("-noLoop makes it where the btsnd doesnt loop its sound. (cant be used with -loopPoint.)");
+        	System.out.println("-gamepadOnly makes sound only hearable on gamepad(BUGGY?). (cant be used with -tvOnly.)");
+        	System.out.println("-tvOnly makes sound only hearable on tv(sound plays twice and then stops no matter what?). (cant be used with -gamepadOnly.)");
         	System.exit(0);
         	
         }
         String inPath = null;
         String outPath = "bootSound";
         boolean makeBtsnd = true;
+        int hearableWhere = 2;
         int loopPoint = 0;
         boolean silentLoop = false;
         for(int i=0;i<args.length;i++) {
@@ -49,6 +53,10 @@ public class Starter {
     			loopPoint = Integer.parseInt(args[i]);
     		} else if(currentArg.equals("-noLoop")) {
     			silentLoop = true;
+    		} else if(currentArg.equals("-gamepadOnly")) {
+    			hearableWhere = 1;
+    		} else if(currentArg.equals("-tvOnly")) {
+    			hearableWhere = 0;
     		}
         }
         //error checking for the args
@@ -58,7 +66,7 @@ public class Starter {
         if(silentLoop == true && loopPoint > 0) {
         	exitWithError("multipleloopargs");
         }
-        if(silentLoop == true || loopPoint > 0 && makeBtsnd == false) {
+        if((silentLoop == true || loopPoint > 0) && makeBtsnd == false) {
         	exitWithError("invalidargsformakewav");
         }
         if(makeBtsnd) {
@@ -85,7 +93,7 @@ public class Starter {
 	            }
 	            
 	            ByteBuffer output = ByteBuffer.allocate(data.length - 0x2C + 8);
-	            output.put(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(2).array());
+	            output.put(ByteBuffer.allocate(4).order(ByteOrder.BIG_ENDIAN).putInt(hearableWhere).array());
 	            if(silentLoop) {
 	            	loopPoint = (((data.length - 0x2C) / 4) + 1);
 	            }
