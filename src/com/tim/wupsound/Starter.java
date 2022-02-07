@@ -19,56 +19,98 @@ public class Starter {
         ,(byte) 0xEE,0x02,0x00,0x04,0x00,0x10,0x00,0x64,0x61,0x74,0x61};
         
         if(args.length == 0){
+			System.out.println("This program only supports RIFF wav files.");
         	System.out.println("Usage:");
         	System.out.println("java -jar wav2btsnd.jar -in <infile> <optional args>");
+        	System.out.println("The program will automatically detect the type of input file and choose which type of file to output (E.g.: .wav input will automatically output .btsnd file");
+			System.out.println();
         	System.out.println("Optional Args:");
-        	System.out.println("-out <outfile> specifies a location to create the converted file, defualt is a bootSound.btsnd created in the same directory as this jar file.");
-        	System.out.println("-makeWav converts a btsnd to a wav, instead of a wav to a btsnd.");
-        	System.out.println("the following commands are only for making btsnds");
-        	System.out.println("-loopPoint <sampleforlooping> specifies a specific sample to loop from there to the end, once playthrough of the btsnd has finished once. (cant be used with -noLoop.)");
-        	System.out.println("-noLoop makes it where the btsnd doesnt loop its sound. (cant be used with -loopPoint.)");
-        	System.out.println("-gamepadOnly makes sound only hearable on gamepad. (cant be used with -tvOnly.)");
-        	System.out.println("-tvOnly makes sound only hearable on tv. (cant be used with -gamepadOnly.)");
+        	System.out.println("  -out <outfile>: File path to create the converted file in. Default is name of input file + appropriate file extension in the same directory as the program.");
+			System.out.println();
+			System.out.println("  -makeWav:       Convert .btsnd to .wav. (Can be used to Force Convert)");
+			System.out.println("      Incompatible with: -makeBtsnd");
+			System.out.println();
+			System.out.println("  -makeBtsnd:     Convert .wav to .btsnd. (Can be used to Force Convert)");
+			System.out.println("      Incompatible with: -makeWav");
+			System.out.println();
+        	System.out.println("These args are only for making btsnd's:");
+        	System.out.println("  -loopPoint <loop_sample>: (int) Specifies a specific sample to loop from there to the end, once play-through of the btsnd has finished once.");
+			System.out.println("      Incompatible with: -noLoop, -makeWav");
+			System.out.println();
+			System.out.println("  -noLoop:        Disables the looping for btsnd.");
+			System.out.println("      Incompatible with: -loopPoint, -makeWav");
+			System.out.println();
+			System.out.println("  -gamepadOnly:   Makes sound only hearable on gamepad.");
+			System.out.println("      Incompatible with: -tvOnly");
+			System.out.println();
+			System.out.println("  -tvOnly:        Makes sound only hearable on TV (main console).");
+			System.out.println("      Incompatible with: -gamepadOnly");
         	System.exit(0);
-        	
         }
-        String inPath = null;
-        String outPath = "bootSound";
+
+        String inPath = "";
+        String outPath = "";
         boolean makeBtsnd = true;
+		boolean usedMake = false; // tells if args -makeWav or -makeBtsnd were used by the user
         int hearableWhere = 2;
         int loopPoint = 0;
         boolean silentLoop = false;
+
         for(int i=0;i<args.length;i++) {
         	String currentArg = args[i];
-    		if(currentArg.equals("-in")) {
-    			i++;
-    			inPath = args[i];
-    		} else if(currentArg.equals("-out")) {
-    			i++;
-    			outPath = args[i];
-    		} else if(currentArg.equals("-makeWav")) {
-    			makeBtsnd = false;
-    		} else if(currentArg.equals("-loopPoint")) {
-    			i++;
-    			loopPoint = Integer.parseInt(args[i]);
-    		} else if(currentArg.equals("-noLoop")) {
-    			silentLoop = true;
-    		} else if(currentArg.equals("-gamepadOnly")) {
-    			hearableWhere = 1;
-    		} else if(currentArg.equals("-tvOnly")) {
-    			hearableWhere = 0;
-    		}
+
+			switch (currentArg) {
+				case "-in" -> {
+					i++;
+					inPath = args[i];
+
+					if (inPath.endsWith(".btsnd"))
+						makeBtsnd = false;
+
+					if (outPath.isEmpty())
+						outPath = file_no_ext(inPath);
+				}
+				case "-out" -> {
+					i++;
+					outPath = args[i];
+				}
+				case "-makeWav" -> {
+					if (usedMake)
+						exitWithError(errorCode.multipleMakeArgs);
+
+					makeBtsnd = false;
+					usedMake = true;
+				}
+				case "-makeBtsnd" -> {
+					if (usedMake)
+						exitWithError(errorCode.multipleMakeArgs);
+
+					makeBtsnd = true;
+					usedMake = true;
+				}
+				case "-loopPoint" -> {
+					i++;
+					loopPoint = Integer.parseInt(args[i]);
+				}
+				case "-noLoop" ->
+					silentLoop = true;
+				case "-gamepadOnly" ->
+					hearableWhere = 1;
+				case "-tvOnly" ->
+					hearableWhere = 0;
+			}
         }
         //error checking for the args
-        if(inPath == null) {
-        	exitWithError("noinfile");
+        if(inPath.isEmpty()) {
+        	exitWithError(errorCode.noInFile);
         }
-        if(silentLoop == true && loopPoint > 0) {
-        	exitWithError("multipleloopargs");
+        if(silentLoop && loopPoint > 0) {
+        	exitWithError(errorCode.multipleLoopArgs);
         }
-        if((silentLoop == true || loopPoint > 0) && makeBtsnd == false) {
-        	exitWithError("invalidargsformakewav");
+        if((silentLoop || loopPoint > 0) && !makeBtsnd) {
+        	exitWithError(errorCode.invalidArgsForMakeWav);
         }
+
         if(makeBtsnd) {
         	if(!outPath.endsWith(".btsnd")) {
         		outPath += ".btsnd";
@@ -89,7 +131,7 @@ public class Starter {
 	            
 	            if(!( Arrays.equals(compare_buffer1,wav_header1) &&
 	                  Arrays.equals(compare_buffer2,wav_header2) )){
-	                exitWithError("badinfile");
+	                exitWithError(errorCode.badInFile);
 	            }
 	            
 	            ByteBuffer output = ByteBuffer.allocate(data.length - 0x2C + 8);
@@ -112,7 +154,7 @@ public class Starter {
 	            fos.close();
 	        } catch (IOException e) {
 	            e.printStackTrace();
-	            exitWithError("nonexistinfile");
+	            exitWithError(errorCode.noneExistInFile);
 	        }
 	        System.out.println("Saved to " + outPath);
 	    } else {
@@ -139,36 +181,73 @@ public class Starter {
 	            fos.close();
 	        } catch (IOException e) {
 	            e.printStackTrace();
-	            exitWithError("nonexistinfile");
+	            exitWithError(errorCode.noneExistInFile);
 	        }
 	        System.out.println("Saved to " + outPath);
 	    }
     }
+
+	public enum errorCode {
+		noInFile, badInFile,
+		multipleLoopArgs,
+		multipleMakeArgs,
+		noneExistInFile, invalidArgsForMakeWav
+	}
     
-    public static void exitWithError(String reason){
-    	if(reason.equals("noinfile")) {
-     		System.out.println("you must use -in and provide a file to convert!");
-     		System.exit(0);
-     	} else if(reason.equals("badinfile")) {
-    		System.out.println("You need to provide a 48000khz 16bit stereo .wav as input.");
-    		System.exit(0);
-    	} else if(reason.equals("multipleloopargs")) {
-    		System.out.println("You cant provide 2 loop arguments!");
-    		System.exit(0);
-    	} else if(reason.equals("nonexistinfile")) {
-    		System.out.println("In-file you provided doesnt exist!");
-    		System.exit(0);
-    	} else if(reason.equals("invalidargsformakewav")) {
-    		System.out.println("you cant use -loopPoint or -noLoop with -makeWav!");
-    		System.exit(0);
-    	}
+    public static void exitWithError(errorCode reason){
+		switch (reason) {
+			case noInFile -> {
+				System.out.println("Must use argument -in to provide input file");
+				System.exit(0);
+			}
+			case badInFile -> {
+				System.out.println("Input .WAV file must be 48000khz (DAT) 16bit stereo");
+				System.exit(0);
+			}
+			case multipleLoopArgs -> {
+				System.out.println("You cant provide 2 loop arguments!");
+				System.exit(0);
+			}
+			case multipleMakeArgs -> {
+				System.out.println("Can't use -makeWav and -makeBtsnd together");
+				System.exit(0);
+			}
+			case noneExistInFile -> {
+				System.out.println("Cannot open input file. Check if it exists or if the relative path is correct.");
+				System.exit(0);
+			}
+			case invalidArgsForMakeWav -> {
+				System.out.println("Can't use -loopPoint and -noLoop when the output is .wav");
+				System.exit(0);
+			}
+		}
     }
+
+	/** Get the full name of a file (may include path depending on input) and removes the file extension.
+	    E.G.: C:/dir/file.txt -> C:/dir/file
+	  * @param path The path to the file (absolute or relative)
+	  * @return File path without extension */
+	public static String file_no_ext(String path) {
+		int end = path.length();
+
+		// find the dot of the file extension
+		for (int i = path.length() - 1; i >= 0; i--)
+		{
+			if (path.charAt(i) == '.')
+			{
+				end = i;
+				break;
+			}
+		}
+
+		return path.substring(0, end);
+	}
     
     public static short swap (short value){
-      int b1 = value & 0xff;
-      int b2 = (value >> 8) & 0xff;
+		  int b1 = value & 0xff;
+		  int b2 = (value >> 8) & 0xff;
 
-      return (short) (b1 << 8 | b2 << 0);
+		  return (short)(b1 << 8 | b2);
     }
 
 }

@@ -60,28 +60,32 @@ int main(int argc, const char** argv)
     if (argc <= 1)
     {
         cout <<
-            "For now, this program only supports RIFF wav files."
+            "This program only supports RIFF wav files."
             "Usage:\n"
             "wav2btsnd -in <input_file> <optional args>\n"
+            "The program will automatically detect the type of input file and choose which type of file to output (E.g.: .wav input will automatically output .btsnd file\n"
             "\n"
             "Optional Args:\n"
-            "-out <outfile: str>: File path to create the converted file in. Default is name of input file + appropriate file extension in the same directory as the program.\n"
+            "  -out <outfile>: File path to create the converted file in. Default is name of input file + appropriate file extension in the same directory as the program.\n"
             "\n"
-            "-makeWav:       Convert .btsnd to .wav.\n"
-            YELLOW"The -makeWav argument is not necessary because the program automatically detects filetypes, so if input is .btsnd it will automatically convert to .wav. The argument can be used to force convert to .wav\n"
-            RESET_COL"\n"
-            "-makeBtsnd:     Convert .wav to .btsnd.\n"
-            YELLOW"Similar situation as -makeWav. Argument can be used to force convert to .btsnd.\n"
-            RESET_COL"\n"
+            "  -makeWav:       Convert .btsnd to .wav.\n"
+            "      Incompatible with: -makeBtsnd\n"
             "\n"
-            "The following commands are only for making btsnd's:\n"
-            "-loopPoint <sampleforlooping: 4-byte-int>: Specifies a specific sample to loop from there to the end, once play-through of the btsnd has finished once. (cant be used with -noLoop or -makeWav)\n"
+            "  -makeBtsnd:     Convert .wav to .btsnd.\n"
+            "      Incompatible with: -makeWav\n"
             "\n"
-            "-noLoop:        Makes it where the btsnd doesnt loop its sound. (cant be used with -loopPoint or -makeWav)\n"
+            "These args are only for making btsnd's:\n"
+            "  -loopPoint <loop_sample>: Specifies a specific sample to loop from there to the end, once play-through of the btsnd has finished once.\n"
+            "      Incompatible with: -noLoop, -makeWav\n"
             "\n"
-            "-gamepadOnly:   Makes sound only hearable on gamepad. (cant be used with -tvOnly)\n"
+            "  -noLoop:        Makes it where the btsnd doesnt loop its sound.\n"
+            "      Incompatible with: -loopPoint, -makeWav\n"
             "\n"
-            "-tvOnly:        Makes sound only hearable on tv. (cant be used with -gamepadOnly)\n"
+            "  -gamepadOnly:   Makes sound only hearable on gamepad.\n"
+            "      Incompatible with: -tvOnly\n"
+            "\n"
+            "  -tvOnly:        Makes sound only hearable on tv.\n"
+            "      Incompatible with: -gamepadOnly\n"
             "\n";
         // successful exit
         return 0;
@@ -113,7 +117,7 @@ int main(int argc, const char** argv)
     int loop_point = 0;
     bool silent_loop = false;
 
-    // tels if args -makeWav or -makeBtsnd were used by the user
+    // tells if args -makeWav or -makeBtsnd were used by the user
     bool used_make = false;
 
 
@@ -190,15 +194,15 @@ int main(int argc, const char** argv)
     // checking for errors in arguments
     if (input_path.empty())
     {
-        exit_err("No input file was provided. Specify an input file with -in");
+        exit_err("Must use argument -in to provide input file");
     }
     if (silent_loop && loop_point > 0)
     {
-        exit_err("Cannot use -loopPoint and -noLoop together");
+        exit_err("Can't use -loopPoint and -noLoop together");
     }
     if ((silent_loop || loop_point > 0) && !make_btsnd)
     {
-        exit_err("Cannot use -loopPoint and -noLoop when the output is .wav");
+        exit_err("Can't use -loopPoint and -noLoop when the output is .wav");
     }
 
 
@@ -240,7 +244,7 @@ int main(int argc, const char** argv)
             if (std::memcmp(file_header1, wav_header1.data(), wav_header1.size()) != 0 &&
                 std::memcmp(file_header2, wav_header2.data(), wav_header2.size()) != 0)
             {
-                // TODO: uncomment -> exit_err("Input .WAV file must be 48000khz (DAT) 16bit stereo");
+                exit_err("Input .WAV file must be 48000khz (DAT) 16bit stereo");
             }
 
 
