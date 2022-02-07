@@ -19,8 +19,13 @@
 
 #define exit_err(err) std::cerr << err << std::endl; return 1
 
-#define RESET_COL  "\033[m"
-#define YELLOW     "\033[33m"
+#define RESET_COL  "\e[0m"
+#define RED        "\e[0;31m"
+#define GREEN      "\e[0;32m"
+#define YELLOW     "\e[0;33m"
+#define BLUE       "\e[0;34m"
+#define PURPLE     "\e[0;35m"
+#define CYAN       "\e[0;36m"
 
 
 inline int str_to_int(const char* str);
@@ -60,32 +65,32 @@ int main(int argc, const char** argv)
     if (argc <= 1)
     {
         cout <<
-            "This program only supports RIFF wav files."
+            "This program only supports RIFF wav files.\n"
             "Usage:\n"
-            "wav2btsnd -in <input_file> <optional args>\n"
+            YELLOW "wav2btsnd -in <input_file> <optional args>\n" RESET_COL
             "The program will automatically detect the type of input file and choose which type of file to output (E.g.: .wav input will automatically output .btsnd file\n"
             "\n"
             "Optional Args:\n"
-            "  -out <outfile>: File path to create the converted file in. Default is name of input file + appropriate file extension in the same directory as the program.\n"
+            "  " CYAN "-out " YELLOW "<outfile>" RESET_COL ": File path to create the converted file in. Default is name of input file + appropriate file extension in the same directory as the program.\n"
             "\n"
-            "  -makeWav:       Convert .btsnd to .wav.\n"
-            "      Incompatible with: -makeBtsnd\n"
+            "  " CYAN "-makeWav" RESET_COL ":       Convert.btsnd to.wav.\n"
+            "      Incompatible with: " RED "-makeBtsnd\n" RESET_COL
             "\n"
-            "  -makeBtsnd:     Convert .wav to .btsnd.\n"
-            "      Incompatible with: -makeWav\n"
+            "  " CYAN "-makeBtsnd" RESET_COL ":     Convert .wav to .btsnd.\n"
+            "      Incompatible with: " RED "-makeWav\n" RESET_COL
             "\n"
             "These args are only for making btsnd's:\n"
-            "  -loopPoint <loop_sample>: Specifies a specific sample to loop from there to the end, once play-through of the btsnd has finished once.\n"
-            "      Incompatible with: -noLoop, -makeWav\n"
+            "  " CYAN "-loopPoint " YELLOW "<loop_sample>" RESET_COL ": Specifies a specific sample to loop from there to the end, once play-through of the btsnd has finished once.\n"
+            "      Incompatible with: " RED "-noLoop" RESET_COL ", " RED "-makeWav\n" RESET_COL
             "\n"
-            "  -noLoop:        Makes it where the btsnd doesnt loop its sound.\n"
-            "      Incompatible with: -loopPoint, -makeWav\n"
+            "  " CYAN "-noLoop" RESET_COL ":        Makes it where the btsnd doesnt loop its sound.\n"
+            "      Incompatible with: " RED "-loopPoint" RESET_COL ", " RED "-makeWav\n" RESET_COL
             "\n"
-            "  -gamepadOnly:   Makes sound only hearable on gamepad.\n"
-            "      Incompatible with: -tvOnly\n"
+            "  " CYAN "-gamepadOnly" RESET_COL ":   Makes sound only hearable on gamepad.\n"
+            "      Incompatible with: " RED "-tvOnly\n" RESET_COL
             "\n"
-            "  -tvOnly:        Makes sound only hearable on tv.\n"
-            "      Incompatible with: -gamepadOnly\n"
+            "  " CYAN "-tvOnly" RESET_COL ":        Makes sound only hearable on tv.\n"
+            "      Incompatible with: " RED "-gamepadOnly\n" RESET_COL
             "\n";
         // successful exit
         return 0;
