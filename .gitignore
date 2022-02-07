@@ -1,0 +1,14 @@
+out/
+build/
+x64/
+x86/
+Release/
+Debug/
+
+sample.wav
+bootSound.btsnd
+bootSound.wav
+*.vcxproj*
+
+*.iml
+.idea/
