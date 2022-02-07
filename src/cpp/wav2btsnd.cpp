@@ -19,13 +19,13 @@
 
 #define exit_err(err) std::cerr << err << std::endl; return 1
 
-#define RESET_COL  "\e[0m"
-#define RED        "\e[0;31m"
-#define GREEN      "\e[0;32m"
-#define YELLOW     "\e[0;33m"
-#define BLUE       "\e[0;34m"
-#define PURPLE     "\e[0;35m"
-#define CYAN       "\e[0;36m"
+#define RESET_COL  "\033[0m"
+#define RED        "\033[31m"
+#define GREEN      "\033[32m"
+#define YELLOW     "\033[33m"
+#define BLUE       "\033[34m"
+#define PURPLE     "\033[35m"
+#define CYAN       "\033[36m"
 
 
 inline int str_to_int(const char* str);
@@ -59,7 +59,7 @@ int main(int argc, const char** argv)
     using std::string;
 
     // Program title
-    cout << "WAV to btsnd 0.1. btsnd is BIG_ENDIAN wav is LITTLE_ENDIAN\n";
+    cout << " ------ WAV to btsnd 0.1 alpha ------ \nbtsnd is BIG_ENDIAN wav is LITTLE_ENDIAN\n\n";
 
     // No arguments entered by user. There wil always be 1 argument: the path of the program
     if (argc <= 1)
@@ -209,6 +209,9 @@ int main(int argc, const char** argv)
     {
         exit_err("Can't use -loopPoint and -noLoop when the output is .wav");
     }
+
+
+    // TODO: there are some issues with converting btsnd to wav and vice versa (like the output is larger than its supposed to be [by 12 bytes])
 
 
     // --- The core
