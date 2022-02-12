@@ -211,9 +211,6 @@ int main(int argc, const char** argv)
     }
 
 
-    // TODO: there are some issues with converting btsnd to wav and vice versa (like the output is larger than its supposed to be [by 12 bytes])
-
-
     // --- The core
     // Convert .WAV to .BTSND
     if (make_btsnd)
@@ -223,7 +220,7 @@ int main(int argc, const char** argv)
             output_path += ".btsnd";
 
         std::ifstream input_file{ input_path, std::ios::binary | std::ios::in };
-        dbg_print("Working directory: " << std::filesystem::current_path().generic_string());
+        //dbg_print("Working directory: " << std::filesystem::current_path().generic_string() << endl);
         if (input_file.is_open())
         {
             dbg_println("Opened the file \"" << input_path << "\"");
@@ -244,7 +241,7 @@ int main(int argc, const char** argv)
             byte* file_header2 = new byte[wav_header2.size()];
 
             // put_int header data in the arrays
-            std::copy(data.buf, data.buf + wav_header1.size(), file_header1);
+            std::copy(data.buf    , data.buf     + wav_header1.size(), file_header1);
             std::copy(data.buf + 8, data.buf + 8 + wav_header2.size(), file_header2);
 
             // check if the .wav file is corrupted
@@ -266,13 +263,12 @@ int main(int argc, const char** argv)
 
             out_buf.put_int(loop_point);
 
-            out_buf.endianness(endian::little);
             for (unsigned long i = 44; i < data.size; i += 2)
                 out_buf.put_short(data.get_short(i));
 
 
             // write output buffer to file
-            std::ofstream output_file{ output_path };
+            std::ofstream output_file{ output_path, std::ios::binary | std::ios::out };
             output_file.write((char*)out_buf.buf, out_buf.size);
 
             // write this for the btsnd to not loop
@@ -299,7 +295,6 @@ int main(int argc, const char** argv)
             output_path += ".wav";
 
         std::ifstream input_file{ input_path, std::ios::binary | std::ios::in };
-        dbg_print("Working directory: " << std::filesystem::current_path().generic_string());
         if (input_file.is_open())
         {
             dbg_println("Opened the file \"" << input_path << "\"");
@@ -323,10 +318,10 @@ int main(int argc, const char** argv)
 
             data.endianness(endian::big);
             for (int i = 8; i < data.size; i += 2)
-                out_buf.put_short(swap(data.get_short(i)));
+                out_buf.put_short(data.get_short(i));
 
-            // write output buffer to file
-            std::ofstream output_file{ output_path };
+            // write output buffer to file in binary
+            std::ofstream output_file{ output_path, std::ios::binary | std::ios::out };
             output_file.write((char*)out_buf.buf, out_buf.size);
 
             // free memory
