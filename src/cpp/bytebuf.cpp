@@ -86,6 +86,7 @@ void bytebuf::put(byte val)
 void bytebuf::put_arr(byte* arr, unsigned int size)
 {
     std::copy(arr, arr + size, buf + pos);
+    pos += size;
 }
 
 void bytebuf::put_short(short val)
