@@ -12,3 +12,6 @@ bootSound.wav
 
 *.iml
 .idea/
+
+wav2btsnd.exe
+wav2btsnd.jar
