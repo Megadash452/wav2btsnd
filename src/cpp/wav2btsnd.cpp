@@ -44,10 +44,6 @@ bool str_ends_with(const std::string& str, const std::string& pattern);
 std::string file_no_ext(const std::string& path);
 
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "ConstantConditionsOC"
-#pragma ide diagnostic ignored "UnreachableCode"
-
 int main(int argc, const char** argv)
 {
     // using commas doesn't work sometimes.
@@ -335,7 +331,6 @@ int main(int argc, const char** argv)
     // successful exit
     return 0;
 }
-#pragma clang diagnostic pop
 
 
 
