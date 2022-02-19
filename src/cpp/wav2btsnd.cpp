@@ -228,19 +228,11 @@ int main(int argc, const char** argv)
             input_file.read((char*)data.buf, data.size);
             input_file.close();
 
-            // These will contain the supposed headers of the .wav file
-            // They will be compared with the correct headers to see if the file is corrupted
-            byte* file_header1 = new byte[wav_header1.size()];
-            byte* file_header2 = new byte[wav_header2.size()];
-
-            // put_int header data in the arrays
-            std::copy(data.buf    , data.buf     + wav_header1.size(), file_header1);
-            std::copy(data.buf + 8, data.buf + 8 + wav_header2.size(), file_header2);
-
-            // check if the .wav file is corrupted
+            // compare the file headers with the correct headers
+            // to check if the file is compatible
             // 0 means the content of the memories are the same
-            if (std::memcmp(file_header1, wav_header1.data(), wav_header1.size()) != 0 &&
-                std::memcmp(file_header2, wav_header2.data(), wav_header2.size()) != 0)
+            if (std::memcmp(data.buf    , wav_header1.data(), wav_header1.size()) != 0 &&
+                std::memcmp(data.buf + 8, wav_header2.data(), wav_header2.size()) != 0)
             {
                 exit_err("Input .WAV file must be 48000khz (DAT) 16bit stereo");
             }
@@ -271,9 +263,6 @@ int main(int argc, const char** argv)
                 output_file.write((char*)silence_loop, 4);
             }
 
-            //free memory
-            delete[] file_header1;
-            delete[] file_header2;
             output_file.close();
         }
         else
