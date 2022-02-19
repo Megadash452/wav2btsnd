@@ -17,7 +17,7 @@
 #define dbg_println(x)
 #endif
 
-#define exit_err(err) std::cerr << err << std::endl; return 1
+#define exit_err(err) { std::cerr << err << std::endl; return 1; }
 
 #define RESET_COL  "\033[0m"
 #define RED        "\033[31m"
@@ -151,9 +151,7 @@ int main(int argc, const char** argv)
         {
             // check if makeBtsnd is already an arg
             if (used_make)
-            {
                 exit_err("Cannot use -makeWav and -makeBtsnd together");
-            }
 
             make_btsnd = false;
             used_make = true;
@@ -162,9 +160,7 @@ int main(int argc, const char** argv)
         {
             // check if makeWav is already an arg
             if (used_make)
-            {
                 exit_err("Cannot use -makeWav and -makeBtsnd together");
-            }
 
             make_btsnd = true;
             used_make = true;
@@ -205,38 +201,37 @@ int main(int argc, const char** argv)
 
 
     // --- The core
-    // Convert .WAV to .BTSND
-    if (make_btsnd)
+    std::ifstream input_file{ input_path, std::ios::binary | std::ios::in };
+    //dbg_print("Working directory: " << std::filesystem::current_path().generic_string() << endl);
+
+    if (input_file.is_open())
     {
-        // set file extension of output file to .btsnd
-        if (!str_ends_with(output_path, ".btsnd"))
-            output_path += ".btsnd";
+        dbg_println("Opened the file \"" << input_path << "\"");
 
-        std::ifstream input_file{ input_path, std::ios::binary | std::ios::in };
-        //dbg_print("Working directory: " << std::filesystem::current_path().generic_string() << endl);
-        if (input_file.is_open())
+        // get size of file
+        input_file.seekg(0, std::ios::end);
+        const unsigned long input_file_size = input_file.tellg();
+        input_file.seekg(0, std::ios::beg);
+
+        // load file data to memory
+        bytebuf data{ input_file_size };
+        input_file.read((char*)data.buf, data.size);
+        input_file.close();
+
+
+        if (make_btsnd) // Convert .WAV to .BTSND
         {
-            dbg_println("Opened the file \"" << input_path << "\"");
+            // set file extension of output file to .btsnd
+            if (!str_ends_with(output_path, ".btsnd"))
+                output_path += ".btsnd";
 
-            // get size of file
-            input_file.seekg(0, std::ios::end);
-            const unsigned long input_file_size = input_file.tellg();
-            input_file.seekg(0, std::ios::beg);
-
-            // load file data to memory
-            bytebuf data{ input_file_size };
-            input_file.read((char*)data.buf, data.size);
-            input_file.close();
-
-            // compare the file headers with the correct headers
-            // to check if the file is compatible
+            // compare the file headers with the correct headers to check if the file is compatible
             // 0 means the content of the memories are the same
             if (std::memcmp(data.buf    , wav_header1.data(), wav_header1.size()) != 0 &&
                 std::memcmp(data.buf + 8, wav_header2.data(), wav_header2.size()) != 0)
             {
                 exit_err("Input .WAV file must be 48000khz (DAT) 16bit stereo");
             }
-
 
             bytebuf out_buf = bytebuf{ input_file_size - 44 + 8 }; // og doesn't explain where these numbers come from
             out_buf.endianness(endian::big);
@@ -265,31 +260,11 @@ int main(int argc, const char** argv)
 
             output_file.close();
         }
-        else
+        else // Convert .BTSND to .WAV
         {
-            exit_err("Cannot open file \"" << input_path << "\". Check if it exists or if the relative path is correct.");
-        }
-    }
-    else // Convert .BTSND to .WAV
-    {
-        // set file extension of output file to .wav
-        if (!str_ends_with(output_path, ".wav"))
-            output_path += ".wav";
-
-        std::ifstream input_file{ input_path, std::ios::binary | std::ios::in };
-        if (input_file.is_open())
-        {
-            dbg_println("Opened the file \"" << input_path << "\"");
-
-            // get size of file
-            input_file.seekg(0, std::ios::end);
-            const unsigned long input_file_size = input_file.tellg();
-            input_file.seekg(0, std::ios::beg);
-
-            // load file data to memory
-            bytebuf data{ input_file_size };
-            input_file.read((char*)data.buf, data.size);
-            input_file.close();
+            // set file extension of output file to .wav
+            if (!str_ends_with(output_path, ".wav"))
+                output_path += ".wav";
 
             bytebuf out_buf{ input_file_size - 8 + 44 };
             out_buf.endianness(endian::little);
@@ -309,11 +284,9 @@ int main(int argc, const char** argv)
             // free memory
             output_file.close();
         }
-        else
-        {
-            exit_err("Cannot open file \"" << input_path << "\". Check if it exists or if the relative path is correct.");
-        }
     }
+    else
+        exit_err("Cannot open file \"" << input_path << "\". Check if it exists or if the relative path is correct.");
 
     cout << "Saved to " << output_path << endl;
 
